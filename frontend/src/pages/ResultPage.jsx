@@ -1,6 +1,6 @@
 // FR-UI-03 / FR-UI-04 / FR-UI-02 (needs_review): metrik, tier, valuasi, narasi, tabel koreksi.
 // R-11: simpan hasil ke sessionStorage supaya halaman tidak kosong saat di-refresh waktu demo.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { recompute } from '../api/client.js';
 import ValidationBadge from '../components/ValidationBadge.jsx';
@@ -9,6 +9,7 @@ import TierCard from '../components/TierCard.jsx';
 import ValuationCard from '../components/ValuationCard.jsx';
 import ExtractionTable from '../components/ExtractionTable.jsx';
 import NarrativePanel from '../components/NarrativePanel.jsx';
+import ChatPanel from '../components/ChatPanel.jsx';
 import mockResult from '../mock/analyze.json';
 
 const STORAGE_KEY = 'telusurfin:last_result';
@@ -68,7 +69,7 @@ function ResultView({ id, activeSection, title, description, children }) {
   );
 }
 
-export default function ResultPage({ activeSection }) {
+export default function ResultPage({ activeSection, features }) {
   const { state, pathname, search, hash } = useLocation();
   const navigate = useNavigate();
 
@@ -103,7 +104,20 @@ export default function ResultPage({ activeSection }) {
   });
 
   const [recomputing, setRecomputing] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const chatLauncher = useRef(null);
+  const chatRegion = useRef(null);
   const [recomputeError, setRecomputeError] = useState(null);
+
+  function openChat() {
+    setChatOpen(true);
+    requestAnimationFrame(() => chatRegion.current?.focus());
+  }
+
+  function closeChat() {
+    setChatOpen(false);
+    chatLauncher.current?.focus();
+  }
 
   useEffect(() => {
     if (!state?.result) return;
@@ -243,7 +257,30 @@ export default function ResultPage({ activeSection }) {
           </p>
         )}
         <div className="result-summary-grid">
-          <NarrativePanel result={result} />
+          <div>
+            <NarrativePanel result={result} />
+            <section className="tf-chat-launch" aria-label="Asisten AI untuk laporan">
+              <div className="tf-chat-launch-copy">
+                <h2>Tanyakan ke Asisten AI</h2>
+                <p>{features === null ? 'Memeriksa ketersediaan asisten…' : features.chat
+                  ? 'Tanyakan arti rasio atau telusuri angka ke halaman PDF sumber.'
+                  : 'Asisten AI belum tersedia pada server analisis yang sedang terhubung.'}</p>
+              </div>
+              {features?.chat && (
+                <button ref={chatLauncher} type="button" className="btn-primary"
+                  aria-expanded={chatOpen} aria-controls={chatOpen ? 'report-chat' : undefined}
+                  onClick={chatOpen ? closeChat : openChat}>
+                  {chatOpen ? 'Tutup percakapan' : 'Mulai bertanya'}
+                </button>
+              )}
+            </section>
+            {chatOpen && features?.chat && (
+              <div id="report-chat" ref={chatRegion} tabIndex={-1}>
+                <ChatPanel key={entity?.file_id} result={result}
+                  canExpand={features.chat_page} onClose={closeChat} />
+              </div>
+            )}
+          </div>
           <section className="summary-figures" aria-labelledby="summary-figures-heading">
             <h2 id="summary-figures-heading">Angka utama</h2>
             <dl>
@@ -266,6 +303,7 @@ export default function ResultPage({ activeSection }) {
         description="Baca rasio per kelompok dan lihat posisi emiten dalam klaster."
       >
         <div className="result-ratio-grid">
+          <TierCard tiering={tiering} />
           <section className="metrics-column card">
             <div className="section-header">
               <h2>Rasio kesehatan keuangan</h2>
@@ -291,7 +329,6 @@ export default function ResultPage({ activeSection }) {
               ))}
             </div>
           </section>
-          <TierCard tiering={tiering} />
         </div>
       </ResultView>
 

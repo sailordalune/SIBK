@@ -10,17 +10,16 @@ export const RESULT_SECTIONS = [
 
 const ICON_PATHS = {
   add: 'M12 5v14M5 12h14',
-  collapse: 'M3 5h18v14H3zM9 5v14m7-9-2 2 2 2',
-  expand: 'M3 5h18v14H3zM9 5v14m5-9 2 2-2 2',
   summary: 'M6 3h9l3 3v15H6zM14 3v4h4M9 11h6m-6 4h6',
   ratios: 'M4 4v16h16M8 16v-3m4 3V9m4 7v-5m4 5V7',
   wallet: 'M4 7h16v13H4zM4 7l14-3v3m2 5h-5a2 2 0 0 0 0 4h5',
   table: 'M4 5h16v14H4zM4 10h16M4 14.5h16M10 5v14',
+  chat: 'M4 5h16v11H9l-5 4zM8 9h8m-8 3h5',
 };
 
-function SidebarIcon({ name }) {
+function NavigationIcon({ name }) {
   return (
-    <svg className="sidebar-icon" width="21" height="21" viewBox="0 0 24 24"
+    <svg className="workspace-nav-icon" width="19" height="19" viewBox="0 0 24 24"
       fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"
       strokeLinejoin="round" aria-hidden="true" focusable="false">
       <path d={ICON_PATHS[name]} />
@@ -28,52 +27,50 @@ function SidebarIcon({ name }) {
   );
 }
 
-function SidebarLink({ label, icon, to, current, collapsed }) {
+export default function WorkspaceNavigation({ resultRoute, showResultSections, activeSection, chatRoute, chatPageAvailable }) {
   return (
-    <Link className="sidebar-link" to={to} aria-current={current || undefined}
-      aria-label={label} title={collapsed ? label : undefined}>
-      <SidebarIcon name={icon} />
-      <span className="sidebar-label">{label}</span>
-    </Link>
-  );
-}
-
-export default function Sidebar({ collapsed, onToggle, resultRoute, showResultSections, activeSection }) {
-  const toggleLabel = collapsed ? 'Perluas sidebar' : 'Perkecil sidebar';
-
-  return (
-    <aside className="app-sidebar">
-      <div className="sidebar-header">
-        <Link to="/" className="sidebar-brand" aria-label="TelusurFin, halaman unggah"
-          title={collapsed ? 'TelusurFin' : undefined}>
-          <span className="sidebar-brand-mark"><img src={brandMark} width="27" height="27" alt="" /></span>
-          <span className="sidebar-brand-name">TelusurFin</span>
+    <header className="workspace-header">
+      <div className="workspace-masthead">
+        <Link to="/" className="workspace-brand" aria-label="TelusurFin, halaman unggah">
+          <span className="workspace-brand-mark"><img src={brandMark} width="27" height="27" alt="" /></span>
+          <span>TelusurFin</span>
         </Link>
-        <button className="sidebar-toggle" type="button" onClick={onToggle}
-          aria-expanded={!collapsed} aria-controls="telusurfin-nav" aria-label={toggleLabel}
-          title={toggleLabel}>
-          <SidebarIcon name={collapsed ? 'expand' : 'collapse'} />
-        </button>
+        <div className="workspace-actions">
+          {chatPageAvailable && !showResultSections && !chatRoute && (
+            <Link className="workspace-nav-link" to="/chatbot">
+              <NavigationIcon name="chat" />
+              <span>Asisten AI</span>
+            </Link>
+          )}
+          <Link className="workspace-new" to="/" aria-current={!resultRoute && !chatRoute ? 'page' : undefined}>
+            <NavigationIcon name="add" />
+            Analisis baru
+          </Link>
+        </div>
       </div>
 
-      <nav id="telusurfin-nav" className="sidebar-navigation" aria-label="Navigasi TelusurFin">
-        <SidebarLink label="Analisis baru" icon="add" to="/" current={!resultRoute ? 'page' : null} collapsed={collapsed} />
-        {showResultSections && (
-          <ul className="sidebar-result-links">
+      {showResultSections && (
+        <nav className="workspace-nav" aria-label="Navigasi TelusurFin">
+          <ul className="workspace-nav-list">
             {RESULT_SECTIONS.map(({ id, label, icon }) => (
               <li key={id}>
-                <SidebarLink
-                  label={label}
-                  icon={icon}
+                <Link className="workspace-nav-link"
                   to={{ pathname: '/result', hash: '#' + id }}
-                  current={activeSection === id ? 'page' : null}
-                  collapsed={collapsed}
-                />
+                  aria-current={activeSection === id ? 'page' : undefined}>
+                  <NavigationIcon name={icon} />
+                  <span>{label}</span>
+                </Link>
               </li>
             ))}
+            <li>
+              <Link className="workspace-nav-link" to="/chatbot">
+                <NavigationIcon name="chat" />
+                <span>Asisten AI</span>
+              </Link>
+            </li>
           </ul>
-        )}
-      </nav>
-    </aside>
+        </nav>
+      )}
+    </header>
   );
 }

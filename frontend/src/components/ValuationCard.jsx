@@ -73,52 +73,84 @@ export default function ValuationCard({ valuation, market, isQuarterly, onApplyP
 
   return (
     <div className="ValuationCard">
-      <section className="market-price-box" aria-labelledby="market-heading">
-        <div className="market-current">
-          <h2 id="market-heading">Harga saham</h2>
-          {market?.price != null ? (
-            <>
-              <div className="market-price-value">{fmtRupiah(market.price)}</div>
-              <div className="market-meta">
-                {marketSource && <div>Sumber harga <strong>{marketSource}</strong></div>}
-                {market.fetched_at && (
-                  <div>
-                    {market.source === 'manual' ? 'Waktu input ' : 'Waktu pengambilan '}
-                    <time dateTime={market.fetched_at}>{new Date(market.fetched_at).toLocaleString('id-ID')}</time>
-                  </div>
+      <div className="valuation-quote-strip">
+        <section className="market-price-box" aria-labelledby="market-heading">
+          <div className="market-current">
+            <h2 id="market-heading">Harga saham</h2>
+            {market?.price != null ? (
+              <>
+                <div className="market-price-value">{fmtRupiah(market.price)}</div>
+                <div className="market-meta">
+                  {marketSource && <div>Sumber harga <strong>{marketSource}</strong></div>}
+                  {market.fetched_at && (
+                    <div>
+                      {market.source === 'manual' ? 'Waktu input ' : 'Waktu pengambilan '}
+                      <time dateTime={market.fetched_at}>{new Date(market.fetched_at).toLocaleString('id-ID')}</time>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <p className="market-missing-message">
+                Harga pasar belum tersedia. Masukkan harga per saham untuk menghitung PER, PBV, P/S, dan selisih terhadap nilai wajar.
+              </p>
+            )}
+          </div>
+        </section>
+        <section className="graham-box" aria-labelledby="graham-heading">
+          <div className="graham-header">
+            <h2 id="graham-heading">Nilai wajar</h2>
+            <span className="graham-method">Graham Number</span>
+          </div>
+          <div className="graham-grid">
+            <div>
+              <small className="graham-sub">Estimasi nilai wajar</small>
+              <div className="graham-val">
+                {hasFv ? (
+                  <strong>{fv.display}</strong>
+                ) : (
+                  <span className="unavailable-reason">{fv?.unavailable_reason || 'Tidak tersedia'}</span>
                 )}
               </div>
-            </>
-          ) : (
-            <p className="market-missing-message">
-              Harga pasar belum tersedia. Masukkan harga per saham untuk menghitung PER, PBV, P/S, dan selisih terhadap nilai wajar.
-            </p>
-          )}
-        </div>
-
-        <form onSubmit={handleSubmit} className="manual-price-form">
-          <label htmlFor="manual-price-input">Harga manual per saham (Rp)</label>
-          <div className="manual-price-row">
-            <input
-              id="manual-price-input"
-              type="text"
-              inputMode="numeric"
-              placeholder="Contoh: 3.000"
-              value={priceText}
-              onChange={(e) => setPriceText(e.target.value)}
-              disabled={loading}
-              aria-invalid={priceError ? true : undefined}
-              aria-describedby={priceError ? 'manual-price-error' : undefined}
-            />
-            <button type="submit" className="btn-secondary" disabled={loading}>
-              Pakai harga
-            </button>
+            </div>
+            <div>
+              <small className="graham-sub">Premium atau diskon terhadap nilai wajar</small>
+              <div className="graham-val">
+                {hasPd ? (
+                  <strong className={pd.value <= 0 ? 'text-success' : 'text-warning'}>
+                    {pd.display}
+                  </strong>
+                ) : (
+                  <span className="unavailable-reason">{pd?.unavailable_reason || 'Harga belum tersedia'}</span>
+                )}
+              </div>
+            </div>
           </div>
-          {priceError && <small id="manual-price-error" className="text-danger" role="alert">{priceError}</small>}
-        </form>
-      </section>
+        </section>
+      </div>
 
-      <section className="valuation-ledger card" aria-labelledby="valuation-ledger-heading">
+      <form onSubmit={handleSubmit} className="manual-price-form">
+        <label htmlFor="manual-price-input">Harga manual per saham (Rp)</label>
+        <div className="manual-price-row">
+          <input
+            id="manual-price-input"
+            type="text"
+            inputMode="numeric"
+            placeholder="Contoh: 3.000"
+            value={priceText}
+            onChange={(e) => setPriceText(e.target.value)}
+            disabled={loading}
+            aria-invalid={priceError ? true : undefined}
+            aria-describedby={priceError ? 'manual-price-error' : undefined}
+          />
+          <button type="submit" className="btn-secondary" disabled={loading}>
+            Pakai harga
+          </button>
+        </div>
+        {priceError && <small id="manual-price-error" className="text-danger" role="alert">{priceError}</small>}
+      </form>
+
+      <section className="valuation-ledger" aria-labelledby="valuation-ledger-heading">
         <h2 id="valuation-ledger-heading">Ukuran valuasi</h2>
         <dl className="valuation-list">
           <ValuationItem label="EPS" description="Laba per saham" item={valuation?.eps} annualized={isQuarterly} />
@@ -138,37 +170,6 @@ export default function ValuationCard({ valuation, market, isQuarterly, onApplyP
             )}
           </div>
         )}
-      </section>
-
-      <section className="graham-box" aria-labelledby="graham-heading">
-        <div className="graham-header">
-          <h2 id="graham-heading">Nilai wajar</h2>
-          <span className="graham-method">Graham Number</span>
-        </div>
-        <div className="graham-grid">
-          <div>
-            <small className="graham-sub">Estimasi nilai wajar</small>
-            <div className="graham-val">
-              {hasFv ? (
-                <strong>{fv.display}</strong>
-              ) : (
-                <span className="unavailable-reason">{fv?.unavailable_reason || 'Tidak tersedia'}</span>
-              )}
-            </div>
-          </div>
-          <div>
-            <small className="graham-sub">Premium atau diskon terhadap nilai wajar</small>
-            <div className="graham-val">
-              {hasPd ? (
-                <strong className={pd.value <= 0 ? 'text-success' : 'text-warning'}>
-                  {pd.display}
-                </strong>
-              ) : (
-                <span className="unavailable-reason">{pd?.unavailable_reason || 'Harga belum tersedia'}</span>
-              )}
-            </div>
-          </div>
-        </div>
       </section>
     </div>
   );

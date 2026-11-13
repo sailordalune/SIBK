@@ -78,7 +78,7 @@ export default function ExtractionTable({
   }
 
   return (
-    <section className="ExtractionTable card" aria-labelledby="extraction-table-title">
+    <section className="ExtractionTable" aria-labelledby="extraction-table-title">
       <div className="extraction-header">
         <div>
           <h2 id="extraction-table-title">Angka dari laporan</h2>

@@ -2,20 +2,13 @@ import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useMatch } from 'react-router-dom';
 import UploadPage from './pages/UploadPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
+import ChatbotPage from './pages/ChatbotPage.jsx';
+import { getHealth } from './api/client.js';
 import Disclaimer from './components/Disclaimer.jsx';
-import Sidebar, { RESULT_SECTIONS } from './components/Sidebar.jsx';
+import WorkspaceNavigation, { RESULT_SECTIONS } from './components/Sidebar.jsx';
 import './styles/sidebar.css';
 
-const SIDEBAR_STORAGE_KEY = 'telusurfin:sidebar_collapsed';
 const RESULT_STORAGE_KEY = 'telusurfin:last_result';
-
-function readSidebarPreference() {
-  try {
-    const saved = localStorage.getItem(SIDEBAR_STORAGE_KEY);
-    if (saved != null) return saved === 'true';
-  } catch {}
-  return window.matchMedia('(max-width: 760px)').matches;
-}
 
 function hasResult(state) {
   if (state?.result || import.meta.env.VITE_USE_MOCK === 'true') return true;
@@ -29,16 +22,19 @@ function hasResult(state) {
 export default function App() {
   const location = useLocation();
   const resultRoute = Boolean(useMatch('/result'));
+  const chatRoute = Boolean(useMatch('/chatbot/*'));
+  const [features, setFeatures] = useState(null);
   const showResultSections = resultRoute && hasResult(location.state);
   const requestedSection = location.hash === '#tier' ? 'rasio' : location.hash.slice(1);
   const activeSection = RESULT_SECTIONS.find(({ id }) => id === requestedSection)?.id ?? 'ringkasan';
-  const [collapsed, setCollapsed] = useState(readSidebarPreference);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(collapsed));
-    } catch {}
-  }, [collapsed]);
+    let active = true;
+    getHealth()
+      .then((health) => { if (active) setFeatures(health.features ?? {}); })
+      .catch(() => { if (active) setFeatures({}); });
+    return () => { active = false; };
+  }, [resultRoute, chatRoute]);
 
   useEffect(() => {
     if (!showResultSections) return;
@@ -51,22 +47,24 @@ export default function App() {
   }, [activeSection, showResultSections]);
 
   return (
-    <div className={'app-shell' + (collapsed ? ' app-shell--collapsed' : '')}>
+    <div className="app-shell">
       <a className="app-skip-link" href="#main-content" onClick={(event) => {
         event.preventDefault();
         document.getElementById('main-content')?.focus();
       }}>Lewati navigasi</a>
-      <Sidebar
-        collapsed={collapsed}
-        onToggle={() => setCollapsed((previous) => !previous)}
+      <WorkspaceNavigation
         resultRoute={resultRoute}
         showResultSections={showResultSections}
         activeSection={activeSection}
+        chatRoute={chatRoute}
+        chatPageAvailable={Boolean(features?.chat_page)}
       />
       <div className="app-content">
         <Routes>
           <Route path="/" element={<UploadPage />} />
-          <Route path="/result" element={<ResultPage activeSection={activeSection} />} />
+          <Route path="/result" element={<ResultPage activeSection={activeSection} features={features} />} />
+          <Route path="/chatbot" element={<ChatbotPage features={features} />} />
+          <Route path="/chatbot/:sessionId" element={<ChatbotPage features={features} />} />
         </Routes>
         <Disclaimer />
       </div>

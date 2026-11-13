@@ -6,7 +6,9 @@
 .ExtractionTable .extraction-header {
   align-items: center;
   gap: 16px 24px;
-  margin-bottom: 20px;
+  margin: 0 0 16px;
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--rule);
 }
 
 .ExtractionTable .extraction-header > div:first-child {
@@ -15,7 +17,8 @@
 
 .ExtractionTable .extraction-header h2 {
   color: var(--ink);
-  font: 700 1.35rem/1.2 var(--heading-font);
+  font: 750 1.35rem/1.2 var(--heading-font);
+  letter-spacing: -.025em;
 }
 
 .ExtractionTable .section-subtitle {
@@ -30,19 +33,28 @@
   font-variant-numeric: tabular-nums;
 }
 
+.ExtractionTable .extraction-actions button {
+  min-height: 42px;
+}
+
+.ExtractionTable .extraction-actions {
+  margin-inline-start: auto;
+}
+
 .ExtractionTable .table-responsive {
   max-width: 100%;
   border: 1px solid var(--rule);
   border-radius: 10px;
+  background: var(--surface);
 }
 
 .ExtractionTable .table-responsive:focus-visible {
   outline: 2px solid var(--blue);
-  outline-offset: 3px;
+  outline-offset: -2px;
 }
 
 .ExtractionTable .data-table {
-  min-width: 720px;
+  min-width: 690px;
   table-layout: fixed;
   font-size: .875rem;
   font-variant-numeric: tabular-nums;
@@ -50,18 +62,29 @@
 
 .extraction-col-label { width: 30%; }
 .extraction-col-value { width: 19%; }
-.extraction-col-prior { width: 17%; }
+.extraction-col-prior { width: 16%; }
 .extraction-col-page { width: 10%; }
-.extraction-col-confidence, .extraction-col-status { width: 12%; }
+.extraction-col-confidence { width: 11%; }
+.extraction-col-status { width: 14%; }
 
 .ExtractionTable .data-table :is(th, td) {
-  padding: 10px clamp(9px, 1cqw, 16px);
+  padding: 8px clamp(8px, 1.4cqw, 16px);
+}
+
+.ExtractionTable .data-table :is(th, td):first-child {
+  padding-inline-start: clamp(12px, 2.3cqw, 30px);
 }
 
 .ExtractionTable .data-table thead th {
-  background: var(--navy);
-  color: var(--surface);
+  padding-block: 12px;
+  background: #102c63;
+  color: #fff;
   font-size: .8125rem;
+  font-weight: 750;
+}
+
+.ExtractionTable .data-table thead th:nth-child(2) {
+  background: #234fca;
 }
 
 .ExtractionTable .data-table tbody th {
@@ -73,11 +96,24 @@
 }
 
 .ExtractionTable .data-table tbody tr:nth-child(even):not(.row-dirty, .row-corrected) {
-  background: #f8f6f0;
+  background: #f5f9fe;
+}
+
+.ExtractionTable .data-table tbody td:nth-child(2) {
+  background: rgb(35 79 202 / 5%);
+}
+
+.ExtractionTable .data-table tbody tr:focus-within:not(.row-dirty, .row-corrected) {
+  background: #eaf3ff;
 }
 
 .ExtractionTable .data-table tbody tr:last-child :is(th, td) {
   border-bottom: 0;
+}
+
+.ExtractionTable .pos-label {
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .ExtractionTable .pos-key {
@@ -88,23 +124,46 @@
 .ExtractionTable .cell-input {
   width: min(100%, 150px);
   padding: 7px 9px;
+  border-color: #b8cbe4;
+  border-radius: 5px;
   background: var(--surface);
   color: var(--ink);
   font: inherit;
   font-variant-numeric: inherit;
 }
 
+.ExtractionTable .cell-input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+
 .ExtractionTable .cell-input.input-invalid {
+  border-color: #b91c1c;
   background: #fef2f2;
 }
 
-.extraction-scroll-hint {
+.ExtractionTable .SourcePageLink {
+  padding-inline: 0;
+  background: transparent;
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ExtractionTable .SourcePageLink:hover {
+  background: transparent;
+  color: var(--navy);
+}
+
+.ExtractionTable .extraction-scroll-hint {
   display: none;
-  margin-bottom: 8px;
+  padding: 0 0 8px;
   color: var(--muted);
   font-size: .8125rem;
 }
 
-@container (width < 722px) {
-  .extraction-scroll-hint { display: block; }
+@container (width < 692px) {
+  .ExtractionTable .extraction-scroll-hint { display: block; }
+  .ExtractionTable .extraction-actions { margin-inline-start: 0; }
 }
